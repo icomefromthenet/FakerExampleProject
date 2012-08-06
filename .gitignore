@@ -1,0 +1,4 @@
+dump/*.php
+dump/*.sql
+dump/*.xml
+config/*.php
