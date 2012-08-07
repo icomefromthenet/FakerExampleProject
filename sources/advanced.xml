@@ -502,6 +502,12 @@
    </pick>
   </column>
   
+  <!--
+  Title Column
+  
+  
+  
+  -->
   <column name="title" type="string">
    <datatype name="alphanumeric">
     <option name="format" value="ccccc" />
@@ -509,6 +515,8 @@
   </column>
   
   <!--
+  Description Column:
+  
   With description columns , you need to ask yourself do you need semantic meaning?
   
   I don't and have used the `Text` type with random selector. This configuration will
@@ -528,46 +536,156 @@
    </random>
   </column>
   
+  <!--
+  Release Year column:
   
+  Using a random date, make sure that you set the start and max date to
+  create a range, the random number comes from the random generator so
+  it is deterministic.
+  
+  Movies have been around a while so I set the start to 1910 with max of now
+  since the column is date, it will not include any time values.
+  -->
   <column name="release_year" type="date">
-   <datatype name="alphanumeric">
-    <option name="format" value="ccccc" />
+   <datatype name="datetime">
+    <option name="random" value="true" />
+    <option name="start"  value="01-01-1910" />
+    <option name="max"    value="now" />
    </datatype>
   </column>
   
+  <!--
+  Rental Duration column:
+  
+  Using a random date, make sure that you set the start and max date to
+  create a range, the random number comes from the random generator so
+  it is deterministic.
+  
+  Duration for rentals is usually short so I set the start date to now - 3 weeks
+  with max of now. Short range of values
+  -->
   <column name="rental_duration" type="boolean">
-   <datatype name="alphanumeric">
-    <option name="format" value="ccccc" />
+   <datatype name="datetime">
+    <option name="random" value="true" />
+    <option name="start"  value="now -3 weeks" />
+    <option name="max"    value="now" />
    </datatype>
   </column>
   
+  <!--
+  Rental Rate column:
+  
+  Using a numeric with random selector.
+  
+  I set the range to be 0cents - 99.99dollars.  Using the random tage and multiple numerics I have spread
+  the values generated over the whole range  
+  
+  -->
   <column name="rental_rate" type="decimal">
-   <datatype name="alphanumeric">
-    <option name="format" value="ccccc" />
-   </datatype>
+   <random>
+    <!-- 0 - 10 cents --> 
+    <datatype name="numeric">
+        <option name="format" value="0.0x" />
+    </datatype>
+
+    <!-- 10 - 99 cents -->
+    <datatype name="numeric">
+        <option name="format" value="0.Xx" />
+    </datatype>
+
+    <!-- 1.00 - 9.99 dollars -->
+    <datatype name="numeric">
+        <option name="format" value="X.xx" />
+    </datatype>
+    <!-- 10.00 dollars - 99.99 dollars -->
+    <datatype name="numeric">
+        <option name="format" value="Xx.xx" />
+    </datatype>
+    
+   </random>
   </column>
   
+  <!--
+  Length Column:
+  
+  Assume length is minutes, use a range with random step
+  and a min and max to constrain value
+  
+  -->
   <column name="length" type="smallint">
-   <datatype name="alphanumeric">
-    <option name="format" value="ccccc" />
+   <datatype name="range">
+        <option name="min" value="30" />
+        <option name="max" value="300" />
+        <option name="random" value="true" />
    </datatype>
   </column>
   
+ 
+  <!--
+  Replacement Cost Column:
+  
+  Using random selector with numeric range set.
+  Values between 1.00 - 999.99.
+
+  -->
   <column name="replacement_cost" type="decimal">
-   <datatype name="alphanumeric">
-    <option name="format" value="ccccc" />
-   </datatype>
+   <random>
+    <!-- 1.00 - 9.99 dollars -->
+    <datatype name="numeric">
+        <option name="format" value="X.xx" />
+    </datatype>
+    
+    <!-- 10.00 dollars - 99.99 dollars -->
+    <datatype name="numeric">
+        <option name="format" value="Xx.xx" />
+    </datatype>
+
+    <!-- 100.00 - 999.99 dollars -->
+    <datatype name="numeric">
+        <option name="format" value="Xxx.xx" />
+    </datatype>
+   </random>
   </column>
   
+  
+  <!--
+  Raiting Column
+  
+  Using a random with constant string to pick between raitings. 
+  -->
   <column name="rating" type="string">
-   <datatype name="alphanumeric">
-    <option name="format" value="ccccc" />
-   </datatype>
+   <random>
+    <datatype name="constant_string">
+     <option name="value" value="G" />
+    </datatype>
+    <datatype name="constant_string">
+     <option name="value" value="PG" />
+    </datatype>
+    <datatype name="constant_string">
+     <option name="value" value="M" />
+    </datatype>
+    <datatype name="constant_string">
+     <option name="value" value="MA" />
+    </datatype>
+    <datatype name="constant_string">
+     <option name="value" value="R" />
+    </datatype>
+    <datatype name="constant_string">
+     <option name="value" value="X" />
+    </datatype>
+   </random>
   </column>
   
+  <!--
+   Special Features Column:
+   
+   There are no other tables to define special features, just use the text type
+   to include description of special features
+  
+  -->
   <column name="special_features" type="string">
-   <datatype name="alphanumeric">
-    <option name="format" value="ccccc" />
+   <datatype name="text">
+    <option name="paragraphs" value="1" />
    </datatype>
   </column>
   
