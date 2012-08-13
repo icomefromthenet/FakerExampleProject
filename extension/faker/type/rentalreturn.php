@@ -7,7 +7,7 @@ use Faker\Components\Faker\Exception as FakerException,
     Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition,
     Symfony\Component\Config\Definition\Builder\TreeBuilder;
 
-class Password extends Type
+class RentalReturn extends Type
 {
 
     //  -------------------------------------------------------------------------
@@ -19,8 +19,9 @@ class Password extends Type
      */
     public function generate($rows,$values = array())
     {
-        $format = $this->getOption('format');
-        return md5($this->utilities->generateRandomAlphanumeric($format,$this->getGenerator(),$this->getLocale()));
+        $return_date = clone $values['rental_date'];
+        
+        return $return_date->modify('+'.ceil($this->getGenerator()->generate(0,7)).' days');
     }
     
     
@@ -34,14 +35,7 @@ class Password extends Type
      */
     public function getConfigExtension(ArrayNodeDefinition $rootNode)
     {
-        return $rootNode
-            ->children()
-                ->scalarNode('format')
-                    ->info('Text format to generate')
-                    ->example('xxxxx ccccCC')
-                ->end()
-            ->end();
-            
+        return $rootNode;
     }
     
     

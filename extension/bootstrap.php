@@ -38,7 +38,7 @@ use Faker\Locale\LocaleFactory;
 */
 
     PlatformFactory::registerExtension('mysql','Faker\\Extension\\Doctrine\\Platforms\\MySqlPlatform');
-
+    
  
 /*
 |--------------------------------------------------------------------------
@@ -63,10 +63,8 @@ use Faker\Locale\LocaleFactory;
 | Faker DataTypes
 |--------------------------------------------------------------------------
 | 
-| To Add a new datatype a it must be registerd registered, the  object
-| implements TypeConfigInterface,CompositeInterface and TypeInterface.
-|
-| You are only required to register the config as it containsa factory for the partner datatype. 
+| To Add a new datatype a it must be registered, and the object
+| are extending from base Type.
 |
 | You may also override built in types using the same key.
 |
@@ -76,6 +74,7 @@ use Faker\Locale\LocaleFactory;
 */
 
  TypeFactory::registerExtension('password','Faker\\Extension\\Faker\\Type\\Password');
+ TypeFactory::registerExtension('rental.return','Faker\\Extension\\Faker\\Type\\RentalReturn');
 
 /*
 |--------------------------------------------------------------------------

@@ -168,24 +168,34 @@
  
  <table name="address" generate="100" generatorSeed="100" randomGenerator="mersenne">
   
-  <!-- Auto Incrementing Integer -->
+  <!--
+   Auto Incrementing Integer
+   
+   -->
   <column name="address_id" type="smallint">
    <datatype name="autoincrement">
    </datatype>
   </column>
   
-  <!-- Foreign Key with City Table -->
+  <!--
+   Foreign Key with City Table
+   
+   -->
   <column name="city_id" type="smallint">
    <foreign-key name="address.city" foreignColumn="city_id" foreignTable="city" />
   </column>
   
-  <!-- Example Address [number] [street name] [street_type] -->
+  <!-- 
+   Example Address [number] [street name] [street_type] (50 Characters)
+   
+  -->
   <column name="address" type="string">
-   <!-- Combine DataTypes -->
-   
-   <!-- [number] -->
+
+   <!-- [number] Max 15 characters -->
    <datatype name="alphanumeric">
-    <option name="format" value="ccccc" />
+    <option name="format"    value="ccccc" />
+    <option name="repeatMin" value="1" />
+    <option name="repeatMax" value="3" />
    </datatype>
    
    <!-- [ ] -->
@@ -193,34 +203,44 @@
      <option name="value" value=" " />
    </datatype>
    
-   <!-- [street_name ] -->
+   <!--[street_name ] Max 15 characters-->
    <datatype name="alphanumeric">
     <option name="format" value="ccccc" />
+    <option name="repeatMin" value="1" />
+    <option name="repeatMax" value="3" />
    </datatype>
    
    <!-- [ ] -->
    <datatype name="constant_string">
      <option name="value" value=" " />
+     
    </datatype>
    
-   <!-- [street_type] -->
+   <!-- [street_type] Max 15 characters-->
    <datatype name="alphanumeric">
     <option name="format" value="ccccc" />
+    <option name="repeatMin" value="1" />
+    <option name="repeatMax" value="3" />
    </datatype>
   
   </column>
   
-  <!-- Example Address2 [suburb] -->
+  <!--
+   Example Address2 50 characters
+   
+  -->
   <column name="address2" type="string">
-   
-   <!-- [suburb] --> 
    <datatype name="alphanumeric">
     <option name="format" value="ccccc" />
+    <option name="repeatMin" value="1"/>
+    <option name="repeatMax" value="12" />
    </datatype>
-  
   </column>
   
-  <!-- State [nsw|qld|wa|vic|act|tas|sa|nt] -->
+  <!--
+   State [nsw|qld|wa|vic|act|tas|sa|nt]
+  
+  -->
   <column name="district" type="string">
     <!-- Pick one constant at random -->
    <random>
@@ -250,14 +270,16 @@
     </datatype>
    </random>
   </column>
-  
-  <column name="postal_code" type="string">
-    
-    <!--
+
+  <!--
     Each there are a couple of fixed formats for Australian postcodes
     the random element will pick on of the formats at random for each generator pass,
     since the selector uses the buildin number generator the select will be deterministic.
-    -->
+    
+    Up to 10 characters
+    
+  -->
+  <column name="postal_code" type="string">
     <random>
       <!-- NSW Codes --> 
       <datatype name="numeric">
@@ -286,17 +308,15 @@
     </random>
   </column>
   
-  <!-- Phone number -->
-  <column name="phone" type="string">
-   
-   <!--
+  <!-- Phone number up to 20 characters
     Where using the alphanumeric because it will produce a string value (column is a string not number), if
     we used numeric it would cast the value into string have unexpected results.
-   -->
+  
+  -->
+  <column name="phone" type="string">
    <datatype name="alphanumeric">
     <option name="format" value="(xx) xxxx - xxxx" />
    </datatype>
-   
   </column>
   
   <!-- Date -->
@@ -463,9 +483,9 @@
  
  /////////////////////////////////////////////////////////////////////////////////////////////////////-->
  
- <table name="film" generate="0">
+ <table name="film" generate="800">
   
-  <column name="film_id" type="smallint">
+  <column name="film_id" type="integer">
    <datatype name="autoincrement">
    </datatype>
   </column>
@@ -505,12 +525,11 @@
   <!--
   Title Column
   
-  
-  
+  varchar 255
   -->
   <column name="title" type="string">
    <datatype name="alphanumeric">
-    <option name="format" value="ccccc" />
+    <option name="format" value="ccc" />
    </datatype>
   </column>
   
@@ -557,19 +576,10 @@
   <!--
   Rental Duration column:
   
-  Using a random date, make sure that you set the start and max date to
-  create a range, the random number comes from the random generator so
-  it is deterministic.
-  
-  Duration for rentals is usually short so I set the start date to now - 3 weeks
-  with max of now. Short range of values
+  Predefines rental periods 1-3 (according to schema)
   -->
-  <column name="rental_duration" type="boolean">
-   <datatype name="datetime">
-    <option name="random" value="true" />
-    <option name="start"  value="now -3 weeks" />
-    <option name="max"    value="now" />
-   </datatype>
+  <column name="rental_duration" type="smallint">
+    <datatype name="range" max="3" min="1" step="1" />
   </column>
   
   <!--
@@ -627,6 +637,7 @@
   Using random selector with numeric range set.
   Values between 1.00 - 999.99.
 
+  (Decial 5,2)
   -->
   <column name="replacement_cost" type="decimal">
    <random>
@@ -697,171 +708,232 @@
   </column>
  </table>
 
- <!--///////////////////////////////////////////////////////////////////////////////////////////////////
-  Film Actor
  
+ <!--///////////////////////////////////////////////////////////////////////////////////////////////////
+  Film Actor (Join Table)
+ 
+  On join tables as below, please be aware you may end up with non unique columns when using a compsite primary key
+  and a large generate value.
+  
+  In this example if I have 100 film actors in the first primary table and 800 films in the second primary
+  table, If I generate 800 film_actor relationships I can guarantee a unique relation i.e each film
+  will have only one actor.
+ 
+  This not normal for a movie which have many actors, using foreign-key type there
+  can only a maxium 800 unique rows (foreign keys repeat values when exhausted) with row 801 equal to row 1.
+  
+  It's better to use the `range type` (has upper bound) with a window function applied.
+  
+  In this example using range with film id column, configuring with max range of 1 - 800 (800 films).
+  on the 801 value the range will reset back to 1 + window function.
+  
+  On FIRST iteration.
+  Actor_id Film_id
+  1         1
+  2         2
+  3         3
+  
+  On SECOND iteration.
+  Actor_id Film_id
+  1         2
+  2         3
+  3         4
+  
+  With the applied window function the kyes remain unique.
  
  /////////////////////////////////////////////////////////////////////////////////////////////////////-->
  
- <table name="film_actor" generate="0">
+ <table name="film_actor" generate="1600">
   <column name="actor_id" type="smallint">
-   <datatype name="alphanumeric">
-    <option name="format" value="ccccc" />
-   </datatype>
+   <foreign-key name="filmActor.actor" foreignColumn="actor_id" foreignTable="actor" />
   </column>
   <column name="film_id" type="smallint">
-   <datatype name="alphanumeric">
-    <option name="format" value="ccccc" />
+   <datatype name="range">
+    <option name="max"        value="800" />
+    <option name="min"        value="1" />
+    <option name="step"       value="1" />
+    <option name="windowStep" value="1" />
    </datatype>
   </column>
   <column name="last_update" type="datetime">
-   <datatype name="alphanumeric">
-    <option name="format" value="ccccc" />
+   <datatype name="date">
+    <option name="start" value="Today" />
+    <option name="modify" value="+1 minute" />
    </datatype>
   </column>
  </table>
 
  <!--///////////////////////////////////////////////////////////////////////////////////////////////////
- File Category (Join Table)  
+ Film Category (Join Table)  
  
+ On join tables as below, please be aware you may end up with non unique columns when using a compsite primary key
+ and a large generate value.
+  
+ In this example if I have 29 film categories in the first primary table and 800 films in the second primary
+ table, If I generate 800 film_category relationships I can guarantee a unique relation i.e each film
+ will have only one category.
+ 
+ If I wanted films to have 2 categories I would generate 1600 rows but need to use a range type with window for films
+ column to ensure unqiue combinations.
  
  /////////////////////////////////////////////////////////////////////////////////////////////////////-->
  
- <table name="film_category" generate="0">
+ <table name="film_category" generate="800">
   <column name="film_id" type="smallint">
-   <datatype name="alphanumeric">
-    <option name="format" value="ccccc" />
-   </datatype>
+     <foreign-key name="filmCategory.film"  foreignColumn="film_id" foreignTable="film" />
   </column>
   <column name="category_id" type="boolean">
-   <datatype name="alphanumeric">
-    <option name="format" value="ccccc" />
-   </datatype>
+   <foreign-key name="filmCategory.category" foreignColumn="category_id" foreignTable="category" />
   </column>
   <column name="last_update" type="datetime">
-   <datatype name="alphanumeric">
-    <option name="format" value="ccccc" />
+   <datatype name="date">
+    <option name="start" value="Today" />
+    <option name="modify" value="+1 minute" />
    </datatype>
   </column>
  </table>
  
- <!--///////////////////////////////////////////////////////////////////////////////////////////////////
- File Text  
+
  
+ <!--///////////////////////////////////////////////////////////////////////////////////////////////////
+ Film Text  
+ 
+ This table has a one to one relationship with films and very important to only generate equal
+ number of rows in this child table as the parent. No automatic check and won't throw exception.
+ Only find the error when go to insert the values into database. 
  
  /////////////////////////////////////////////////////////////////////////////////////////////////////-->
  
- <table name="film_text" generate="0">
+ <table name="film_text" generate="800">
   <column name="film_id" type="smallint">
-   <datatype name="alphanumeric">
-    <option name="format" value="ccccc" />
-   </datatype>
+   <foreign-key name="filmText.file" foreignColumn="film_id" foreignTable="film" />
   </column>
   <column name="title" type="string">
+   <!--
+    Using the Repeat funcition of alphanumeric.
+    
+    The format contains 5 characters using repeatMin 2 and repeatMax 9
+    on any given iteration there be a minimum of 10 characters and max of 45 characters.
+    
+    Be careful of the max does not exceed the column size
+   
+   -->
    <datatype name="alphanumeric">
     <option name="format" value="ccccc" />
+    <option name="repeatMin" value="2" />
+    <option name="repeatMax" value="9" />
    </datatype>
   </column>
+  
+   <!--
+    Using the Text type to produce a block of filler text, since each block as different sizes
+    the maxium and minumum number of characters can not be assures, only use on columns with text type with no upperbound
+   -->
   <column name="description" type="text">
-   <datatype name="alphanumeric">
-    <option name="format" value="ccccc" />
+   <datatype name="text">
+    <option name="paragraphs" value="2" />
+    <option name="minlines"   value="3" />
    </datatype>
   </column>
  </table>
  
+ 
+ 
  <!--///////////////////////////////////////////////////////////////////////////////////////////////////
- File Inventory  
+ Inventory Table 
  
  
  /////////////////////////////////////////////////////////////////////////////////////////////////////-->
  
- <table name="inventory" generate="0">
+ <table name="inventory" generate="1000">
   <column name="inventory_id" type="integer">
-   <datatype name="alphanumeric">
-    <option name="format" value="ccccc" />
-   </datatype>
+   <datatype name="autoincrement" />
   </column>
   <column name="store_id" type="boolean">
-   <datatype name="alphanumeric">
-    <option name="format" value="ccccc" />
-   </datatype>
+   <foreign-key name="inventory.store" foreignColumn="store_id" foreignTable="store" />
   </column>
   <column name="film_id" type="smallint">
-   <datatype name="alphanumeric">
-    <option name="format" value="ccccc" />
-   </datatype>
+   <foreign-key name="inventory.film" foreignColumn="film_id" foreignTable="film" />
   </column>
   <column name="last_update" type="datetime">
-   <datatype name="alphanumeric">
-    <option name="format" value="ccccc" />
+   <datatype name="date">
+    <option name="start"  value="Today" />
+    <option name="modify" value="+1 hour" />
    </datatype>
   </column>
  </table>
  
+
  <!--///////////////////////////////////////////////////////////////////////////////////////////////////
  Language Table 
  
  
  /////////////////////////////////////////////////////////////////////////////////////////////////////-->
  
- <table name="language" generate="0">
+ <table name="language" generate="10">
   <column name="language_id" type="boolean">
-   <datatype name="alphanumeric">
-    <option name="format" value="ccccc" />
-   </datatype>
+   <datatype name="autoincrement" />
   </column>
   <column name="name" type="string">
    <datatype name="alphanumeric">
     <option name="format" value="ccccc" />
+    <option name="repeatMin" value="1" />
+    <option name="repeatMax" value="3" />
    </datatype>
   </column>
   <column name="last_update" type="datetime">
-   <datatype name="alphanumeric">
-    <option name="format" value="ccccc" />
+   <datatype name="date">
+    <option name="start" value="Today" />
+    <option name="modify" value="+1 minute" />
    </datatype>
   </column>
  </table>
 
+ 
  <!--///////////////////////////////////////////////////////////////////////////////////////////////////
  Payment Table 
  
+ Payment table has a Many to One relation with rental, else no need to use payment_id
+ For now assume 800 payment for 1000 rentals. (200 outstanding).
  
  /////////////////////////////////////////////////////////////////////////////////////////////////////-->
  
- <table name="payment" generate="0">
+ <table name="payment" generate="800">
   <column name="payment_id" type="smallint">
-   <datatype name="alphanumeric">
-    <option name="format" value="ccccc" />
-   </datatype>
+   <datatype name="autoincrement" />
   </column>
+  
   <column name="rental_id" type="integer">
-   <datatype name="alphanumeric">
-    <option name="format" value="ccccc" />
-   </datatype>
+   <foreign-key name="payment.rental" foreignColumn="rental_id" foreignTable="rental" />
   </column>
   <column name="customer_id" type="smallint">
-   <datatype name="alphanumeric">
-    <option name="format" value="ccccc" />
-   </datatype>
+   <foreign-key name="payment.customer" foreignColumn="customer_id" foreignTable="customer" />
   </column>
   <column name="staff_id" type="boolean">
-   <datatype name="alphanumeric">
-    <option name="format" value="ccccc" />
-   </datatype>
+   <foreign-key name="payment.staff" foreignColumn="staff_id" foreignTable="staff" />
   </column>
+  
+  <!-- Decimal Number (5,2) -->
   <column name="amount" type="decimal">
-   <datatype name="alphanumeric">
-    <option name="format" value="ccccc" />
+   <datatype name="range">
+    <option name="max"    value="10000.00" />
+    <option name="min"    value="1.00" />
+    <option name="random" value="true" />
+    <option name="round"  value="2" />
    </datatype>
   </column>
+  
   <column name="payment_date" type="datetime">
-   <datatype name="alphanumeric">
-    <option name="format" value="ccccc" />
+   <datatype name="date">
+    <option name="start" value="Today" />
+    <option name="modify" value="+1 minute" />
    </datatype>
   </column>
+  
   <column name="last_update" type="datetime">
-   <datatype name="alphanumeric">
-    <option name="format" value="ccccc" />
+  <datatype name="date">
+    <option name="start" value="Today" />
+    <option name="modify" value="+1 minute" />
    </datatype>
   </column>
  </table>
@@ -874,37 +946,48 @@
  
  /////////////////////////////////////////////////////////////////////////////////////////////////////-->
   
- <table name="rental" generate="0">
+ <table name="rental" generate="1000">
   <column name="rental_id" type="integer">
-   <datatype name="autoincrement">
-   </datatype>
+   <datatype name="autoincrement" />
   </column>
+  
   <column name="staff_id" type="boolean">
    <foreign-key name="rental.staff" foreignColumn="staff_id" foreignTable="staff" />
   </column>
+  
   <column name="inventory_id" type="integer">
-   <datatype name="alphanumeric">
-    <option name="format" value="ccccc" />
-   </datatype>
+   <foreign-key name="rental.inventory" foreignColumn="inventory_id" foreignTable="inventory" />
   </column>
+  
   <column name="customer_id" type="smallint">
-   <datatype name="alphanumeric">
-    <option name="format" value="ccccc" />
-   </datatype>
+   <foreign-key name="rental.customer" foreignColumn="inventory_id" foreignTable="inventory" />
   </column>
+  
   <column name="rental_date" type="datetime">
-   <datatype name="alphanumeric">
-    <option name="format" value="ccccc" />
+   <datatype name="date">
+    <option name="start" value="Today - 12 Days" />
+    <option name="modify" value="+1 minute" />
    </datatype>
   </column>
+  
+  <!--
+   We want to return a video within 7 days of their borrowing.
+   
+   Would be nice to use a template column but doctrine column requires
+   that the value passed to it be an instance of DateTime type.
+   
+   We need to write our own custom type, make sure to include it after the
+   rental date column
+  -->
   <column name="return_date" type="datetime">
-   <datatype name="alphanumeric">
-    <option name="format" value="ccccc" />
-   </datatype>
+   <datatype name="rental.return" />
   </column>
+  
+  
   <column name="last_update" type="datetime">
-   <datatype name="alphanumeric">
-    <option name="format" value="ccccc" />
+  <datatype name="date">
+    <option name="start" value="Today" />
+    <option name="modify" value="+1 minute" />
    </datatype>
   </column>
  </table>
