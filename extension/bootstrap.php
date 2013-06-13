@@ -56,6 +56,7 @@ use Doctrine\DBAL\Types\Type;
 
    //Type::addType('point', 'Geo\Types\Point');
     
+    
 /*
 |--------------------------------------------------------------------------
 | Faker DataTypes
@@ -72,6 +73,7 @@ use Doctrine\DBAL\Types\Type;
 */
 
  //TypeFactory::registerExtension('vector','Faker\\Extension\\Faker\\Type\\Vector');
+ TypeFactory::registerExtension('rental.return','Faker\\Extension\\Faker\\Type\\RentalReturn');
 
 /*
 |--------------------------------------------------------------------------
