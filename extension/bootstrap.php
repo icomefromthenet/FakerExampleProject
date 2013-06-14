@@ -14,7 +14,7 @@
 
 use Faker\PlatformFactory;
 use Faker\Components\Engine\Common\Formatter\FormatterFactory;
-use Faker\Components\Engine\Common\TypeFactory;
+use Faker\Components\Engine\Common\TypeRepository;
 use Faker\Locale\LocaleFactory;
 use Doctrine\DBAL\Types\Type;
 
@@ -72,8 +72,8 @@ use Doctrine\DBAL\Types\Type;
 | TypeFactory::registerExtension('vector','Faker\\Extension\\Faker\\Type\\Vector');
 */
 
- //TypeFactory::registerExtension('vector','Faker\\Extension\\Faker\\Type\\Vector');
- TypeFactory::registerExtension('rental.return','Faker\\Extension\\Faker\\Type\\RentalReturn');
+ //TypeRepository::registerExtension('vector','Faker\\Extension\\Faker\\Type\\Vector');
+ TypeRepository::registerExtension('rental.return','Faker\\Extension\\Faker\\Type\\RentalReturn');
 
 /*
 |--------------------------------------------------------------------------
